@@ -1,12 +1,12 @@
 //SPDX SPDX-License-Identifier: MIT
-pragma solidity ^0.8.8; 
+pragma solidity ^0.8.8;
 
 contract SimpleStorage {
     //boolean, uint, int, address, bytes
     // struct, mapping
 
-    //this get initialize to zero! 
-    uint256 favoriteNumber; 
+    //this get initialize to zero!
+    uint256 favoriteNumber;
     mapping(string => uint256) public nameToFavoriteNumber;
 
     struct People {
@@ -21,7 +21,7 @@ contract SimpleStorage {
     }
 
     //view, pure --> spend no gaz --> disallow modification of state (pure disallow reding from the blockchain)
-    function retrieve() public view returns (uint256){
+    function retrieve() public view returns (uint256) {
         return favoriteNumber;
     }
 
