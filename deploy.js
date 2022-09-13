@@ -3,18 +3,30 @@ const fs = require("fs-extra");
 const path = require("path");
 require("dotenv").config();
 
+function loggerReceipt(_contractReceipt) {
+    console.log(``);
+    console.log(`🌈 - Contract Deployed!`);
+    console.log(`👤 - Deployer Address: ${_contractReceipt.from}`);
+    console.log(`📍 - Contract Address: ${_contractReceipt.contractAddress}`);
+    console.log(`🤑 - Gaz used: ${_contractReceipt.gasUsed.toString()}`);
+    console.log(``);
+}
+
 async function main() {
     const provider = new ethers.providers.JsonRpcProvider(
-      process.env.RPC_GOERLI || process.env.RPC_ENDPOINT
+        process.env.RPC_GOERLI || process.env.RPC_ENDPOINT
     );
-    // const wallet = new ethers.Wallet(process.env.ADDR1, provider);
+    const wallet = new ethers.Wallet(
+        process.env.ADDR1_GOERLI || process.env.ADDR1_GANACHE,
+        provider
+    );
 
-    const encryptedJson = fs.readFileSync("./.encryptedKey.json", "utf8");
-    let wallet = new ethers.Wallet.fromEncryptedJsonSync(
-        encryptedJson,
-        process.env.ADDR1_PASSWORD
-    );
-    wallet = await wallet.connect(provider);
+    // const encryptedJson = fs.readFileSync("./.encryptedKey.json", "utf8");
+    // let wallet = new ethers.Wallet.fromEncryptedJsonSync(
+    //     encryptedJson,
+    //     process.env.ADDR1_PASSWORD
+    // );
+    // wallet = await wallet.connect(provider);
 
     const abi = fs.readFileSync(
         path.join("SimpleStorage_sol_SimpleStorage.abi"),
@@ -26,10 +38,19 @@ async function main() {
     );
 
     const contractFactory = new ethers.ContractFactory(abi, binary, wallet);
+    console.log(``);
+    console.log(`🖨️ - Deploying, please wait...`);
+    console.log(``);
 
-    console.log("Deploying, please wait...");
     const contract = await contractFactory.deploy();
-    await contract.deployTransaction.wait(1);
+
+    if (process.env.ADDR1_GOERLI) {
+        console.log(
+            `🌐 - View TX on etherscan https://goerli.etherscan.io/tx/${contract.deployTransaction.hash}`
+        );
+    }
+    const contractReceipt = await contract.deployTransaction.wait(1);
+    loggerReceipt(contractReceipt);
 
     const currentFavoriteNumber = await contract.retrieve();
     console.log(`Current favorite number: ${currentFavoriteNumber.toString()}`);
